@@ -43,12 +43,17 @@ void room_load(int n) {
     while (fgets(line, sizeof(line), f)) {
         for (const char* c = line; *c; ++c) {
             if (*c == '\n') continue;
+
+            int collision_type = COLLISION_NONE;
+
             switch (*c) {
                 case '#': {
                     tiles[i] = TILE_WALL;
+                    collision_type = COLLISION_BOX;
                 } break;
                 case 'x': {
                     tiles[i] = TILE_SPIKE;
+                    collision_type = COLLISION_BOX;
                 } break;
                 case '.': 
                 default: {
@@ -56,7 +61,11 @@ void room_load(int n) {
                 } break;
             }
 
-            sprite_push_col(x, y, 32, 32, tile_desc[tiles[i]].color);
+            Sprite* s = sprite_push_col(x, y, 32, 32, tile_desc[tiles[i]].color);
+            SDL_assert(s);
+
+            s->collision_type = collision_type;
+
             ++i;
 
             x += 32;
