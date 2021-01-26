@@ -1,7 +1,7 @@
 # mildly-infuriating-jam-2021
 A fun but frustrating platformer game made for the Mildly Infuriating Jam 2021.
 
-## Prerequisites
+## Setup
 ### Linux
 Install dependencies.
 ```bash
