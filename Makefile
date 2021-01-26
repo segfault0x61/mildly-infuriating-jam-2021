@@ -2,7 +2,7 @@
 # Variables
 ###############################################################################
 CC = gcc
-CC_FLAGS = -std=c99 -Wall
+CC_FLAGS = -D_GNU_SOURCE -std=c99 -Wall -W
 SRC = ./src/*.c
 
 ifeq ($(OS),Windows_NT) 
