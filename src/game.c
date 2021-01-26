@@ -20,7 +20,7 @@ static Player player = {
 void game_init(void) {
 
     // Draw player
-    sprite_push_tex_frames(400, 200, 32, 32, "res/sprites/bat.png", 4);
+    sprite_push_tex_frames(400, 200, 64, 64, "res/sprites/bat.png", 4);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     room_load(1);
