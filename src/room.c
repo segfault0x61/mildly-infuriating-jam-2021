@@ -14,12 +14,29 @@ enum {
     TILE_SPIKE,
 };
 
-struct Tile {
-    unsigned int color;
-} tile_desc[] = {
-    [TILE_AIR]   = { .color = 0xFF },
-    [TILE_WALL]  = { .color = 0xFFFFFFFF },
-    [TILE_SPIKE] = { .color = 0xFF0000FF }
+typedef struct {
+	unsigned int color;
+	int collision_type;
+	int collision_response;
+} Tile;
+
+Tile tile_desc[] = {
+	[TILE_AIR]   = {
+		.color          = 0xff,
+		.collision_type = COLLISION_NONE
+	},
+
+	[TILE_WALL]  = {
+		.color              = 0xffffffff,
+		.collision_type     = COLLISION_BOX,
+		.collision_response = RESP_BLOCK,
+	},
+
+	[TILE_SPIKE] = {
+		.color              = 0xff0000ff,
+		.collision_type     = COLLISION_BOX,
+		.collision_response = RESP_KILL,
+	}
 };
 
 typedef struct {
@@ -44,16 +61,12 @@ void room_load(int n) {
         for (const char* c = line; *c; ++c) {
             if (*c == '\n') continue;
 
-            int collision_type = COLLISION_NONE;
-
             switch (*c) {
                 case '#': {
                     tiles[i] = TILE_WALL;
-                    collision_type = COLLISION_BOX;
                 } break;
                 case 'x': {
                     tiles[i] = TILE_SPIKE;
-                    collision_type = COLLISION_BOX;
                 } break;
                 case '.': 
                 default: {
@@ -61,13 +74,14 @@ void room_load(int n) {
                 } break;
             }
 
-            Sprite* s = sprite_push_col(x, y, 32, 32, tile_desc[tiles[i]].color);
+            Tile* t = tile_desc + tiles[i];
+            Sprite* s = sprite_push_col(x, y, 32, 32, t->color);
             SDL_assert(s);
 
-            s->collision_type = collision_type;
+            s->collision_type = t->collision_type;
+            s->collision_response = t->collision_response;
 
             ++i;
-
             x += 32;
         }
 

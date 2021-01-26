@@ -8,6 +8,11 @@ enum {
 	COLLISION_BOX,
 };
 
+enum {
+	RESP_BLOCK,
+	RESP_KILL,
+};
+
 typedef struct {
 	union {
 		SDL_Rect rect;
@@ -22,6 +27,7 @@ typedef struct {
 	int num_frames;
 	int cur_frame;
 	int collision_type;
+	int collision_response;
 
 } Sprite;
 
