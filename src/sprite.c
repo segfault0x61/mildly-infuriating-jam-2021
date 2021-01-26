@@ -4,7 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
 
-Sprite sprites[256];
+Sprite sprites[MAX_SPRITES];
 int num_sprites;
 
 void sprite_push(int x, int y, int w, int h) {

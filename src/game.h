@@ -4,6 +4,9 @@
 
 #define array_count(x) (sizeof(x) / sizeof(*x))
 
+#define WINDOW_WIDTH  832
+#define WINDOW_HEIGHT 480
+
 extern SDL_Window *win;
 extern SDL_Renderer *renderer;
 

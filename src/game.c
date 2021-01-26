@@ -1,5 +1,6 @@
 #include "game.h"
 #include "sprite.h"
+#include "room.h"
 
 #include <SDL2/SDL.h>
 
@@ -19,6 +20,8 @@ void game_init(void) {
     // Draw player
     sprite_push_tex_frames(400, 200, 32, 32, "res/sprites/bat.png", 4);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    room_load(1);
 }
 
 void game_update(int delta) {
@@ -51,6 +54,18 @@ void game_update(int delta) {
 }
 
 void game_draw(void) {
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+	SDL_RenderDrawRect(renderer, NULL);
+
+	for (int i = 0; i < 32; ++i) {
+		SDL_RenderDrawLine(renderer, i * 32, 0, i * 32, WINDOW_HEIGHT);
+	}
+
+	for (int i = 0; i < 32; ++i) {
+		SDL_RenderDrawLine(renderer, 0, i * 32, WINDOW_WIDTH, i * 32);
+	}
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     for (int i = 0; i < num_sprites; ++i) {

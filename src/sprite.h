@@ -1,5 +1,6 @@
 #ifndef SPRITE_H_
 #define SPRITE_H_
+
 #include <SDL2/SDL.h>
 
 typedef struct {
@@ -18,7 +19,9 @@ typedef struct {
 
 } Sprite;
 
-extern Sprite sprites[256];
+#define MAX_SPRITES 4096
+
+extern Sprite sprites[MAX_SPRITES];
 extern int num_sprites;
 
 void sprite_push(int x, int y, int w, int h);
