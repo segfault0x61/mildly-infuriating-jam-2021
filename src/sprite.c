@@ -43,23 +43,6 @@ void sprite_push_tex_frames(int x, int y, int w, int h, const char* name, int fr
 	SDL_Surface* surf = IMG_Load(name);
 	SDL_assert(surf);
 
-	/*
-	SDL_Texture* tex = SDL_CreateTexture(
-		renderer,
-		SDL_PIXELFORMAT_RGBA8888,
-		SDL_TEXTUREACCESS_STATIC,
-		actual_w,
-		actual_h
-	);
-
-	SDL_UpdateTexture(
-		tex,
-		NULL,
-		pixels,
-		comp_per_pixel * actual_w
-	);
-*/
-
 	SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
 	if (!tex) {
 		fprintf(stderr, "wtf %s\n", SDL_GetError());
