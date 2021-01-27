@@ -30,8 +30,6 @@ int main(int argc, char** argv) {
 	SDL_SetWindowTitle(win, "WIP GAME");
 
 	uint64_t timer_freq = SDL_GetPerformanceFrequency() / (1000 * 1000);
-	
-	printf("%llu\n", timer_freq);
 	uint64_t timer_start;
 
 	game_init();
@@ -47,9 +45,9 @@ int main(int argc, char** argv) {
 		uint64_t timer_diff = (SDL_GetPerformanceCounter() / timer_freq) - timer_start;
 		timer_start = SDL_GetPerformanceCounter() / timer_freq;
 
-		// test if this actually works...
 		if (timer_diff < 16667) {
 			SDL_Delay(17 - (timer_diff / 1000));
+			timer_diff = 16667;
 		}
 
 		game_update(timer_diff / 1000);

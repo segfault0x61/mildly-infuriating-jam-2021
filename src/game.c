@@ -35,6 +35,7 @@ void game_init(void) {
 	sprites[0].radius = 16;
 	sprites[0].hitbox_scale = 0.5f;
 
+	room_init();
     room_load(1);
 }
 
@@ -47,6 +48,9 @@ static void game_do_player_death(void){
 }
 
 void game_update(int delta) {
+
+	printf("delta: %d\n", delta);
+
 	particles_update(delta);
 
     const uint8_t *keys = SDL_GetKeyboardState(NULL);
@@ -54,29 +58,37 @@ void game_update(int delta) {
 
     SDL_Point move = { .x = player_s->x, .y = player_s->y };
 
+	bool pressed = false;
+
     if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) {
 		if (player.is_bat) {
 	        move.y -= player.speed;
 		}
+		pressed = true;
     }
 
     if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
 		if (player.is_bat) {
 	        move.y += player.speed;
 		}
+		pressed = true;
     }
 
     if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]) {
         move.x -= player.speed;
+		player_s->flip_mode = SDL_FLIP_HORIZONTAL;
+		pressed = true;
     }
 
     if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) {
         move.x += player.speed;
+		player_s->flip_mode = SDL_FLIP_NONE;
+		pressed = true;
     }
 
 	if (player.bat_timer > 0) {
 		player.bat_timer -= delta;
-		if (player.bat_timer < 0) {
+		if (player.bat_timer <= 0) {
 			player.bat_timer = 0;
 			player.is_bat = false;
 			sprite_set_tex(player_s, "res/sprites/vamp.png", 0);
@@ -92,11 +104,23 @@ void game_update(int delta) {
 
 	if (!player.is_bat) {
 		if (player.y_velocity < PLAYER_TERMINAL_VEL) {
-			player.y_velocity += (float)delta / 16.0f;
+			player.y_velocity += (float)delta / 32.0f;
 		}
-		move.y += (player.y_velocity * (delta / 16.0f));
+		move.y += (player.y_velocity * (delta / 32.0f));
 	} else {
 		player.y_velocity = 0;
+	}
+
+	// Animation
+	if (player.is_bat || pressed) {
+		player.anim_timer += delta;
+
+		if (player.anim_timer > 200) {
+			player_s->cur_frame = (player_s->cur_frame + 1) % player_s->num_frames;
+			player.anim_timer = 0;
+		}
+	} else {
+		player_s->cur_frame = 0;
 	}
 
 	// Collision with tiles
@@ -137,13 +161,6 @@ void game_update(int delta) {
 
 		if (!collision_y) {
 			player_s->y = move.y;
-		}
-
-		player.anim_timer += delta;
-
-		if (player.anim_timer > 100) {
-			player_s->cur_frame = (player_s->cur_frame + 1) % player_s->num_frames;
-			player.anim_timer = 0;
 		}
 	}
 

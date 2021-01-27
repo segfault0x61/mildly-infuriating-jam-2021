@@ -2,12 +2,13 @@
 #define ROOM_H_
 
 enum {
-    ROOM_RIGHT,
-    ROOM_LEFT,
-    ROOM_DOWN,
-    ROOM_UP,
+	ROOM_UP,
+	ROOM_DOWN,
+	ROOM_LEFT,
+	ROOM_RIGHT,
 };
 
+void room_init(void);
 void room_load(int n);
 void room_update(int delta);
 void room_switch(int dest);
