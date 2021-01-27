@@ -22,7 +22,8 @@ void game_init(void) {
 
     // Draw player
     sprite_push_tex_frames(400, 200, 64, 64, "res/sprites/bat.png", 4);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	sprites[0].radius = 16;
+	sprites[0].hitbox_scale = 0.5f;
 
     room_load(1);
 }
@@ -59,11 +60,28 @@ void game_update(int delta) {
         move.x += player.speed;
     }
 
-    SDL_Rect x_rect = player_s->rect;
-    SDL_Rect y_rect = player_s->rect;
+	// Collision with edges of screen
+	SDL_Point p = sprite_get_center(player_s);
+	if (p.x > WINDOW_WIDTH) {
+		room_switch(ROOM_RIGHT);
+		player_s->x = 16;
+	} else if (p.x < 0) {
+		room_switch(ROOM_LEFT);
+		player_s->x = WINDOW_WIDTH - 16;
+	}
 
-    x_rect.x = move.x;
-    y_rect.y = move.y;
+	if (p.y > WINDOW_HEIGHT) {
+		room_switch(ROOM_DOWN);
+		player_s->y = 16;
+	} else if (p.y < 0) {
+		room_switch(ROOM_UP);
+		player_s->y = WINDOW_HEIGHT - 16;
+	}
+
+	// Collision with tiles
+	SDL_Rect x_rect = sprite_get_hit_box(player_s), y_rect = x_rect;
+	x_rect.x += (move.x - player_s->x);
+	y_rect.y += (move.y - player_s->y);
 
 	bool collision_x = false;
 	bool collision_y = false;
@@ -73,12 +91,14 @@ void game_update(int delta) {
     for (int i = 1; i < num_sprites; ++i) {
         switch (sprites[i].collision_type) {
             case COLLISION_BOX: {
-                if (SDL_HasIntersection(&x_rect, &sprites[i].rect)) {
+				SDL_Rect s_rect = sprite_get_hit_box(sprites + i);
+
+				if (SDL_HasIntersection(&x_rect, &s_rect)) {
                     collision_x = true;
                     collision_response = sprites[i].collision_response;
                     break;
                 }
-                if (SDL_HasIntersection(&y_rect, &sprites[i].rect)) {
+                if (SDL_HasIntersection(&y_rect, &s_rect)) {
                     collision_y = true;
                     collision_response = sprites[i].collision_response;
                     break;
@@ -107,39 +127,6 @@ void game_update(int delta) {
 	}
 }
 
-static void game_draw_sprite(int i) {
-	SDL_SetRenderDrawColor(
-		renderer,
-		sprites[i].color.r,
-		sprites[i].color.g,
-		sprites[i].color.b,
-		sprites[i].color.a
-	);
-
-	if (sprites[i].tex) {
-		SDL_Rect src_rect;
-
-		SDL_Rect* src_rect_ptr = NULL;
-
-		if (sprites[i].num_frames) {
-			int tw, th;
-			SDL_QueryTexture(sprites[i].tex, NULL, NULL, &tw, &th);
-
-			src_rect.w = (tw / sprites[i].num_frames);
-			src_rect.x = src_rect.w * sprites[i].cur_frame;
-			src_rect.h = th;
-			src_rect.y = 0;
-
-			src_rect_ptr = &src_rect;
-		}
-
-		SDL_SetRenderTarget(renderer, NULL);
-		SDL_RenderCopy(renderer, sprites[i].tex, src_rect_ptr, &sprites[i].rect);
-	} else {
-		SDL_RenderFillRect(renderer, &sprites[i].rect);
-	}
-}
-
 void game_draw(void) {
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -156,11 +143,16 @@ void game_draw(void) {
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	for(int i = 1; i < num_sprites; ++i){
-		game_draw_sprite(i);
+		sprite_draw(sprites + i);
 	}
 
 	particles_draw();
 
 	// Draw player on top
-	game_draw_sprite(0);
+	sprite_draw(sprites);
+
+	// Debug
+	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+	SDL_Rect r = sprite_get_hit_box(sprites);
+	SDL_RenderDrawRect(renderer, &r);	
 }

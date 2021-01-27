@@ -1,5 +1,6 @@
 #include "room.h"
 #include "sprite.h"
+#include "game.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -39,14 +40,16 @@ Tile tile_desc[] = {
 	}
 };
 
-typedef struct {
-    int id;
-    int tiles[ROOM_WIDTH * ROOM_HEIGHT];
-} Room;
-
-Room curr_room;
+static int sprite_offset;
 
 void room_load(int n) {
+    printf("Loading room %d\n", n);
+
+    // A room already loaded
+    if (sprite_offset) {
+        sprite_pop(sprites + sprite_offset, ROOM_WIDTH * ROOM_HEIGHT);
+    }
+
     char* fileName;
     asprintf(&fileName, "res/maps/room%d.txt", n);
     FILE* f = fopen(fileName, "r");
@@ -56,27 +59,28 @@ void room_load(int n) {
     int x  = 0, y = 0;
     int i = 0;
 
-    int* tiles = curr_room.tiles;
+    int tile_type = 0;
+    sprite_offset = num_sprites;
+    
     while (fgets(line, sizeof(line), f)) {
         for (const char* c = line; *c; ++c) {
             if (*c == '\n') continue;
 
             switch (*c) {
                 case '#': {
-                    tiles[i] = TILE_WALL;
+                    tile_type = TILE_WALL;
                 } break;
                 case 'x': {
-                    tiles[i] = TILE_SPIKE;
+                    tile_type = TILE_SPIKE;
                 } break;
                 case '.': 
                 default: {
-                    tiles[i] = TILE_AIR;
+                    tile_type = TILE_AIR;
                 } break;
             }
 
-            Tile* t = tile_desc + tiles[i];
+            Tile* t = tile_desc + tile_type;
             Sprite* s = sprite_push_col(x, y, 32, 32, t->color);
-            SDL_assert(s);
 
             s->collision_type = t->collision_type;
             s->collision_response = t->collision_response;
@@ -90,4 +94,26 @@ void room_load(int n) {
     }
 
     fclose(f);
+}
+
+void room_switch(int dest) {
+    printf("switch %d\n", dest);
+
+    int id = 0;
+    switch (dest) {
+        case ROOM_RIGHT: {
+
+        } break;
+        case ROOM_LEFT: {
+
+        } break;
+        case ROOM_UP: {
+
+        } break;
+        case ROOM_DOWN: {
+
+        } break;
+    }
+
+    room_load(id);
 }

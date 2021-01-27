@@ -7,8 +7,8 @@
 
 typedef struct {
     Sprite sprite;
-    float x_velocity;
-    float y_velocity;
+    float x_velocity, x_position;
+    float y_velocity, y_position;
     int timeToLive;
 } Particle;
 
@@ -27,6 +27,8 @@ void particles_spawn(SDL_Point pos, float xv, float yv, int amount) {
                 .w = PARTICLE_SIZE,
                 .h = PARTICLE_SIZE,
             },
+            .x_position = pos.x,
+            .y_position = pos.y,
             .x_velocity = xv,
             .y_velocity = yv,
             .timeToLive = PARTICLE_TTL_LIMIT + (rand() % 400)
@@ -44,8 +46,11 @@ void particles_update(int delta) {
 
         if (p->timeToLive < PARTICLE_TTL_LIMIT) {
             p->y_velocity -= (delta / 8.0f);
-            p->sprite.x += (p->x_velocity / (float)delta);
-            p->sprite.y -= (p->y_velocity / (float)delta);
+            p->x_position += (p->x_velocity / (float)delta);
+            p->y_position -= (p->y_velocity / (float)delta);
+
+            p->sprite.x = p->x_position;
+            p->sprite.y = p->y_position;
         }
         p->timeToLive -= delta;
     }
