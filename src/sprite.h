@@ -12,6 +12,7 @@ enum {
 enum {
 	RESP_BLOCK,
 	RESP_KILL,
+	RESP_POWERUP,
 };
 
 typedef struct {
@@ -35,6 +36,7 @@ typedef struct {
 	float radius;
 
 	int flip_mode;
+	int rotation;
 
 } Sprite;
 
