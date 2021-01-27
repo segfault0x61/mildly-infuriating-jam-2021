@@ -4,11 +4,13 @@
 #include <stdint.h>
 
 #include "game.h"
+#include "sound.h"
 
 bool running = true;
 
 SDL_Window* win;
 SDL_Renderer* renderer;
+SDL_Rect viewport;
 
 void handle_event(SDL_Event* e) {
 	switch (e->type) {
@@ -29,9 +31,12 @@ int main(int argc, char** argv) {
 
 	SDL_SetWindowTitle(win, "WIP GAME");
 
+	SDL_RenderGetViewport(renderer, &viewport);
+
 	uint64_t timer_freq = SDL_GetPerformanceFrequency() / (1000 * 1000);
 	uint64_t timer_start;
 
+	sound_init();
 	game_init();
 
 	timer_start = SDL_GetPerformanceCounter() / timer_freq;

@@ -13,6 +13,7 @@
 
 extern SDL_Window *win;
 extern SDL_Renderer *renderer;
+extern SDL_Rect viewport;
 
 void game_init(void);
 void game_update(int);
