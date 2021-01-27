@@ -5,23 +5,33 @@
 
 #include <SDL2/SDL.h>
 
+#include <stdio.h>
 #include <stdbool.h>
 
 typedef struct {
     Sprite *sprite;
     int speed;
     int anim_timer;
+	bool is_bat;
+	float x_velocity;
+	float y_velocity;
+	int bat_timer;
 } Player;
 
 static Player player = {
     .sprite = sprites,
-    .speed = 2
+    .speed = 2,
+	.is_bat = false,
 };
+
+#define PLAYER_TERMINAL_VEL 20.0f
+#define BAT_BAR_WIDTH 100
+#define BAT_BAR_HEIGHT 20
 
 void game_init(void) {
 
     // Draw player
-    sprite_push_tex_frames(400, 200, 64, 64, "res/sprites/bat.png", 4);
+    sprite_push_tex(400, 200, 64, 64, "res/sprites/vamp.png");
 	sprites[0].radius = 16;
 	sprites[0].hitbox_scale = 0.5f;
 
@@ -44,38 +54,49 @@ void game_update(int delta) {
 
     SDL_Point move = { .x = player_s->x, .y = player_s->y };
 
-    if (keys[SDL_SCANCODE_W]) {
-        move.y -= player.speed;
+    if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) {
+		if (player.is_bat) {
+	        move.y -= player.speed;
+		}
     }
 
-    if (keys[SDL_SCANCODE_S]) {
-        move.y += player.speed;
+    if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
+		if (player.is_bat) {
+	        move.y += player.speed;
+		}
     }
 
-    if (keys[SDL_SCANCODE_A]) {
+    if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]) {
         move.x -= player.speed;
     }
 
-    if (keys[SDL_SCANCODE_D]) {
+    if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) {
         move.x += player.speed;
     }
 
-	// Collision with edges of screen
-	SDL_Point p = sprite_get_center(player_s);
-	if (p.x > WINDOW_WIDTH) {
-		room_switch(ROOM_RIGHT);
-		player_s->x = 16;
-	} else if (p.x < 0) {
-		room_switch(ROOM_LEFT);
-		player_s->x = WINDOW_WIDTH - 16;
+	if (player.bat_timer > 0) {
+		player.bat_timer -= delta;
+		if (player.bat_timer < 0) {
+			player.bat_timer = 0;
+			player.is_bat = false;
+			sprite_set_tex(player_s, "res/sprites/vamp.png", 0);
+		}
 	}
 
-	if (p.y > WINDOW_HEIGHT) {
-		room_switch(ROOM_DOWN);
-		player_s->y = 16;
-	} else if (p.y < 0) {
-		room_switch(ROOM_UP);
-		player_s->y = WINDOW_HEIGHT - 16;
+	if (!player.bat_timer && keys[SDL_SCANCODE_SPACE]) {
+		sprite_set_tex(player_s, "res/sprites/bat.png", 0);
+		player.is_bat = true;
+		player.bat_timer = 2000;
+	}
+
+
+	if (!player.is_bat) {
+		if (player.y_velocity < PLAYER_TERMINAL_VEL) {
+			player.y_velocity += (float)delta / 16.0f;
+		}
+		move.y += (player.y_velocity * (delta / 16.0f));
+	} else {
+		player.y_velocity = 0;
 	}
 
 	// Collision with tiles
@@ -125,6 +146,28 @@ void game_update(int delta) {
 			player.anim_timer = 0;
 		}
 	}
+
+	// Collision with edges of screen
+	SDL_Point p = sprite_get_center(player_s);
+	if (p.x > WINDOW_WIDTH) {
+		room_switch(ROOM_RIGHT);
+		player_s->x = 1;
+		printf("setting player x %d\n", player_s->x);
+	} else if(p.x < 0) {
+		room_switch(ROOM_LEFT);
+		player_s->x = WINDOW_WIDTH - (player_s->w + 1);
+		printf("setting player x %d\n", player_s->x);
+	}
+
+	if (p.y > WINDOW_HEIGHT) {
+		room_switch(ROOM_DOWN);
+		player_s->y = 1;
+		printf("setting player y %d\n", player_s->y);
+	} else if(p.y < 0) {
+		room_switch(ROOM_UP);
+		player_s->y = WINDOW_HEIGHT - (player_s->h + 1);
+		printf("setting player y %d\n", player_s->y);
+	}
 }
 
 void game_draw(void) {
@@ -150,6 +193,23 @@ void game_draw(void) {
 
 	// Draw player on top
 	sprite_draw(sprites);
+
+	if (player.bat_timer) {
+		SDL_Rect bar_rect = {
+			.x = (WINDOW_WIDTH / 2) - (BAT_BAR_WIDTH / 2),
+			.y = 400,
+			.w = BAT_BAR_WIDTH * (player.bat_timer / 2000.0f),
+			.h = BAT_BAR_HEIGHT,
+		};
+
+		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+		SDL_RenderFillRect(renderer, &bar_rect);
+
+		bar_rect.w = BAT_BAR_WIDTH;
+
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderDrawRect(renderer, &bar_rect); 
+	}
 
 	// Debug
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
