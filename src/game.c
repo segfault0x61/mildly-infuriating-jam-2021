@@ -24,7 +24,10 @@ static Player player = {
 	.is_bat = false,
 };
 
-#define PLAYER_TERMINAL_VEL 20.0f
+#define PLAYER_TERMINAL_VEL 12.0f
+#define PLAYER_ACCEL 0.2f
+#define PLAYER_MAX_IMPULSE 12.0f
+#define PLAYER_MAX_IMPULSE_BAT 15.0f
 #define BAT_BAR_WIDTH 100
 #define BAT_BAR_HEIGHT 20
 
@@ -33,7 +36,8 @@ void game_init(void) {
     // Draw player
     sprite_push_tex(400, 200, 64, 64, "res/sprites/vamp.png");
 	sprites[0].radius = 16;
-	sprites[0].hitbox_scale = 0.5f;
+	sprites[0].hitbox_scale_x = 0.5f;
+	sprites[0].hitbox_scale_y = 1.0f;
 
 	room_init();
     room_load(1);
@@ -49,42 +53,70 @@ static void game_do_player_death(void){
 
 void game_update(int delta) {
 
-	printf("delta: %d\n", delta);
-
 	particles_update(delta);
 
     const uint8_t *keys = SDL_GetKeyboardState(NULL);
     Sprite *player_s = player.sprite;
 
-    SDL_Point move = { .x = player_s->x, .y = player_s->y };
+	if (player.is_bat) {
+		player_s->hitbox_scale_x = player_s->hitbox_scale_y = 0.5f;
+	} else {
+		player_s->hitbox_scale_x = 0.5f;
+		player_s->hitbox_scale_y = 1.0f;
+	}
+
+	const float accel   = (PLAYER_ACCEL * (delta / 16.0f));
+	const float max_imp = player.is_bat ? PLAYER_MAX_IMPULSE_BAT : PLAYER_MAX_IMPULSE;
 
 	bool pressed = false;
 
     if (keys[SDL_SCANCODE_W] || keys[SDL_SCANCODE_UP]) {
 		if (player.is_bat) {
-	        move.y -= player.speed;
+			player.y_velocity = MAX(
+				player.y_velocity - accel,
+				-(max_imp * accel)
+			);
 		}
 		pressed = true;
-    }
-
-    if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
+    } else if (keys[SDL_SCANCODE_S] || keys[SDL_SCANCODE_DOWN]) {
 		if (player.is_bat) {
-	        move.y += player.speed;
+			player.y_velocity = MIN(
+				player.y_velocity + accel,
+				max_imp * accel
+			);
 		}
 		pressed = true;
-    }
+    } else if (player.is_bat) {
+		int sign = player.y_velocity > 0 ? 1 : -1;
+		if(abs(player.y_velocity) < 0.01f){
+			player.y_velocity = 0;
+		} else {
+			player.y_velocity -= MIN(abs(player.y_velocity), accel / 2.0f) * sign;
+		}
+	}
 
     if (keys[SDL_SCANCODE_A] || keys[SDL_SCANCODE_LEFT]) {
-        move.x -= player.speed;
+		player.x_velocity = MAX(
+			player.x_velocity - accel,
+			-(max_imp * accel)
+		);
 		player_s->flip_mode = SDL_FLIP_HORIZONTAL;
 		pressed = true;
-    }
-
-    if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) {
-        move.x += player.speed;
+    } else if (keys[SDL_SCANCODE_D] || keys[SDL_SCANCODE_RIGHT]) {
+		player.x_velocity = MIN(
+			player.x_velocity + accel,
+			max_imp * accel
+		);
 		player_s->flip_mode = SDL_FLIP_NONE;
 		pressed = true;
-    }
+    } else {
+		int sign = player.x_velocity > 0 ? 1 : -1;
+		if(abs(player.x_velocity) < 0.01f){
+			player.x_velocity = 0;
+		} else {
+			player.x_velocity -= MIN(abs(player.x_velocity), accel) * sign;
+		}
+	}
 
 	if (player.bat_timer > 0) {
 		player.bat_timer -= delta;
@@ -99,16 +131,16 @@ void game_update(int delta) {
 		sprite_set_tex(player_s, "res/sprites/bat.png", 0);
 		player.is_bat = true;
 		player.bat_timer = 2000;
+		player.y_velocity = 0;
 	}
 
 
 	if (!player.is_bat) {
 		if (player.y_velocity < PLAYER_TERMINAL_VEL) {
-			player.y_velocity += (float)delta / 32.0f;
+			player.y_velocity = MAX(PLAYER_TERMINAL_VEL, player.y_velocity + (float)delta / 16.0f);
+		} else {
+			player.y_velocity = PLAYER_TERMINAL_VEL;
 		}
-		move.y += (player.y_velocity * (delta / 32.0f));
-	} else {
-		player.y_velocity = 0;
 	}
 
 	// Animation
@@ -125,42 +157,67 @@ void game_update(int delta) {
 
 	// Collision with tiles
 	SDL_Rect x_rect = sprite_get_hit_box(player_s), y_rect = x_rect;
-	x_rect.x += (move.x - player_s->x);
-	y_rect.y += (move.y - player_s->y);
+
+	x_rect.x += player.x_velocity;
+	y_rect.y += player.y_velocity;
 
 	bool collision_x = false;
 	bool collision_y = false;
 
-    int collision_response = 0;
+    bool should_kill = false;
     
-    for (int i = 1; i < num_sprites; ++i) {
-        switch (sprites[i].collision_type) {
-            case COLLISION_BOX: {
-				SDL_Rect s_rect = sprite_get_hit_box(sprites + i);
+	for (int i = 1; i < num_sprites; ++i) {
+		if (sprites[i].collision_type == COLLISION_BOX) {
 
-				if (SDL_HasIntersection(&x_rect, &s_rect)) {
-                    collision_x = true;
-                    collision_response = sprites[i].collision_response;
-                    break;
-                }
-                if (SDL_HasIntersection(&y_rect, &s_rect)) {
-                    collision_y = true;
-                    collision_response = sprites[i].collision_response;
-                    break;
-                }
-            } break;
-        }
-    }
+			SDL_Rect s_rect = sprite_get_hit_box(sprites + i);
+			SDL_Rect intersect;
 
-    if ((collision_y || collision_x) && collision_response == RESP_KILL) {
+			if (!collision_x && SDL_IntersectRect(&x_rect, &s_rect, &intersect)) {
+				collision_x = true;
+
+				if (sprites[i].collision_response == RESP_KILL) {
+					should_kill = true;
+					break;
+				}
+
+				player_s->x += player.x_velocity;
+				player.x_velocity = 0;
+				if (intersect.x <= x_rect.x) {
+					player_s->x += intersect.w;
+				} else {
+					player_s->x -= intersect.w;
+				}
+			}
+
+			if (!collision_y && SDL_IntersectRect(&y_rect, &s_rect, &intersect)) {
+				collision_y = true;
+
+				if (sprites[i].collision_response == RESP_KILL) {
+					should_kill = true;
+					break;
+				}
+
+				player_s->y += player.y_velocity;
+				player.y_velocity = 0;
+				if (intersect.y <= y_rect.y) {
+					player_s->y += intersect.h;
+				} else {
+					player_s->y -= intersect.h;
+				}
+			}
+
+		}
+	}
+
+    if (should_kill) {
 		game_do_player_death();
 	} else {
 		if (!collision_x) {
-			player_s->x = move.x;
+			player_s->x += player.x_velocity;
 		}
 
 		if (!collision_y) {
-			player_s->y = move.y;
+			player_s->y += player.y_velocity;
 		}
 	}
 
@@ -201,7 +258,6 @@ void game_draw(void) {
 		SDL_RenderDrawLine(renderer, 0, i * 32, WINDOW_WIDTH, i * 32);
 	}
 
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	for(int i = 1; i < num_sprites; ++i){
 		sprite_draw(sprites + i);
 	}

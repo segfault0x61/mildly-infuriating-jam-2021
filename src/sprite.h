@@ -30,7 +30,8 @@ typedef struct {
 	int collision_type;
 	int collision_response;
 
-	float hitbox_scale;
+	float hitbox_scale_x;
+	float hitbox_scale_y;
 	float radius;
 
 	int flip_mode;

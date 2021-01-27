@@ -1,8 +1,12 @@
 #ifndef GAME_H_
 #define GAME_H_
+
 #include <SDL2/SDL.h>
 
-#define array_count(x) (sizeof(x) / sizeof(*x))
+#define ARRAY_COUNT(x) (sizeof(x) / sizeof(*x))
+
+#define MAX(a,b) ((a) >  (b) ? (a) : (b))
+#define MIN(a,b) ((a) <= (b) ? (a) : (b))
 
 #define WINDOW_WIDTH  832
 #define WINDOW_HEIGHT 480

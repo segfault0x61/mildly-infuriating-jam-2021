@@ -59,7 +59,7 @@ void room_init(void) {
     int n[4];
     while (fscanf(f, "%d: %d %d %d %d\n", &id, n, n + 1, n + 2, n + 3) == 5) {
         puts("loaded stuff");
-        SDL_assert(id < array_count(room_map));
+        SDL_assert(id < ARRAY_COUNT(room_map));
         memcpy(room_map[id].neighbours, n, sizeof(n));
     }
 }

@@ -29,7 +29,7 @@ void sprite_set_color(Sprite* s, unsigned int color) {
 
 void sprite_set_tex(Sprite* s, const char* name, int frames) {
 	SDL_Texture* tex = NULL;
-	for (int i = 0; i < array_count(tex_cache); ++i) {
+	for (int i = 0; i < ARRAY_COUNT(tex_cache); ++i) {
 		if(tex_cache[i].name && strcmp(name, tex_cache[i].name) == 0){
 			tex = tex_cache[i].tex;
 			break;
@@ -68,7 +68,7 @@ Sprite* sprite_push(int x, int y, int w, int h) {
 }
 
 Sprite* sprite_push_col(int x, int y, int w, int h, unsigned int color) {
-	if (num_sprites >= array_count(sprites)) {
+	if (num_sprites >= ARRAY_COUNT(sprites)) {
 		return NULL;
 	}
 
@@ -88,7 +88,7 @@ Sprite* sprite_push_col(int x, int y, int w, int h, unsigned int color) {
 }
 
 Sprite* sprite_push_tex_frames(int x, int y, int w, int h, const char* name, int frames) {
-	if (num_sprites >= array_count(sprites)) {
+	if (num_sprites >= ARRAY_COUNT(sprites)) {
 		return NULL;
 	}
 
@@ -151,16 +151,18 @@ void sprite_pop(Sprite* start, int num) {
 }
 
 SDL_Rect sprite_get_hit_box(Sprite* s) {
-	if (fabs(s->hitbox_scale) < 0.001f) {
-		return s->rect;
-	}
+	float x_scale = s->hitbox_scale_x;
+	float y_scale = s->hitbox_scale_y;
+	if (fabs(x_scale) < 0.001f) x_scale = 1.0f;
+	if (fabs(y_scale) < 0.001f) y_scale = 1.0f;
 
-	float scale = s->hitbox_scale, half_scale = scale / 2.0f;
+	SDL_Point p = sprite_get_center(s);
+
 	SDL_Rect r = {
-		s->x + (half_scale * s->w),
-		s->y + (half_scale * s->h),
-		s->w * scale,
-		s->h * scale,
+		s->x + (p.x - s->x) * (1.0f - x_scale),
+		s->y + (p.y - s->y) * (1.0f - y_scale),
+		s->w * x_scale,
+		s->h * y_scale,
 	};
 
 	return r;

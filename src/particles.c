@@ -35,12 +35,12 @@ void particles_spawn(SDL_Point pos, float xv, float yv, int amount) {
         };
 
         particles[particle_cursor] = p;
-        particle_cursor = (particle_cursor + 1) % array_count(particles);
+        particle_cursor = (particle_cursor + 1) % ARRAY_COUNT(particles);
     }
 }
 
 void particles_update(int delta) {
-    for (int i = 0; i < array_count(particles); ++i) {
+    for (int i = 0; i < ARRAY_COUNT(particles); ++i) {
         Particle* p = particles + i;
         if (p->timeToLive <= 0) continue;
 
@@ -59,7 +59,7 @@ void particles_update(int delta) {
 void particles_draw(void) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
-    for (int i = 0; i < array_count(particles); ++i) {
+    for (int i = 0; i < ARRAY_COUNT(particles); ++i) {
         Particle* p = particles + i;
         if (p->timeToLive <= 0 || p->timeToLive >= PARTICLE_TTL_LIMIT) continue;
 
