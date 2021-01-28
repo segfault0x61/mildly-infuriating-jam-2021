@@ -1,11 +1,11 @@
-# mildly-infuriating-jam-2021
-A fun but frustrating platformer game made for the Mildly Infuriating Jam 2021.
+# Mildly Infuriating Jam 2021
+A fun but frustrating platformer game made for the Mildly Infuriating Jam 2021. Where you play as a vampire who transforms into a bat to platform your way around frustrating obstables.
 
 ## Setup
 ### Linux
 Install dependencies.
 ```bash
-sudo apt-get install libsdl2-dev libsdl2-image-dev
+sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
 ```
 Then you can build and run it as such.
 ```bash
