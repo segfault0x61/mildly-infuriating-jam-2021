@@ -38,6 +38,8 @@ typedef struct {
 	int flip_mode;
 	int rotation;
 
+	int respawn_timer;
+
 } Sprite;
 
 #define MAX_SPRITES 4096
