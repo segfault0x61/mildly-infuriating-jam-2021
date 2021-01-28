@@ -70,7 +70,7 @@ typedef struct {
 static RoomMap room_map[256];
 
 void room_init(void) {
-    FILE* f = fopen("res/maps/map.txt", "r");
+    FILE* f = fopen("res/maps/map.txt", "rb");
 
     char line[256];
     fgets(line, sizeof(line), f);
@@ -94,7 +94,7 @@ void room_load(int n) {
 
     char* fileName;
     asprintf(&fileName, "res/maps/room%d.txt", n);
-    FILE* f = fopen(fileName, "r");
+    FILE* f = fopen(fileName, "rb");
 
     SDL_assert(f);
 
@@ -169,7 +169,7 @@ void room_load(int n) {
             if (j <= ROOM_WIDTH || tile_types[j - ROOM_WIDTH] != TILE_AIR) {
                 tex_choice |= 4;
             }
-            if (j >= ((ROOM_WIDTH - 1) * ROOM_HEIGHT - 1) || tile_types[j+ROOM_WIDTH] != TILE_AIR) {
+			if (j >= (ROOM_WIDTH * (ROOM_HEIGHT-1)) || tile_types[j+ROOM_WIDTH] != TILE_AIR) {
                 tex_choice |= 8;
             }
 
@@ -194,8 +194,6 @@ void room_load(int n) {
                 [14] = { 0, -90 },
                 [15] = { 4, 0 }, 
             };
-
-            printf("lookup %d %d = %d %d\n", j, tex_choice, tex_lookup[tex_choice].frame, tex_lookup[tex_choice].rotation);
 
             sprites[sprite_offset + j].cur_frame = tex_lookup[tex_choice].frame;
             sprites[sprite_offset + j].rotation = tex_lookup[tex_choice].rotation;
@@ -230,4 +228,8 @@ void room_switch(int dest) {
     int id = room_map[current_room].neighbours[dest];
 
     room_load(id);
+}
+
+void room_reset(void) {
+
 }

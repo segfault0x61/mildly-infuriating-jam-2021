@@ -1,7 +1,9 @@
 #include <SDL2/SDL.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "game.h"
 #include "sound.h"
@@ -21,6 +23,8 @@ void handle_event(SDL_Event* e) {
 }
 
 int main(int argc, char** argv) {
+
+	srand(time(0));
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 

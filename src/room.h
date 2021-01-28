@@ -12,5 +12,6 @@ void room_init(void);
 void room_load(int n);
 void room_update(int delta);
 void room_switch(int dest);
+void room_reset(void);
 
 #endif
