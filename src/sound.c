@@ -8,20 +8,30 @@
 
 typedef struct {
 	const char* name;
+	int volume;
 	Mix_Chunk* sfx;
 } Sound;
 
 Sound sounds[] = {
-	{ "res/sfx/bat.ogg" },
-	{ "res/sfx/die.ogg" },
-	{ "res/sfx/shapeshift.ogg" },
-	{ "res/sfx/unshapeshift.ogg" },
-	{ "res/sfx/nope.ogg" },
-	{ "res/sfx/powerup.ogg" },
+	{ "res/sfx/bat.ogg", 80 },
+	{ "res/sfx/die.ogg", 64 },
+	{ "res/sfx/shapeshift.ogg", 40 },
+	{ "res/sfx/unshapeshift.ogg", 40 },
+	{ "res/sfx/nope.ogg", 20 },
+	{ "res/sfx/powerup.ogg", 64 },
 };
 
 #define NUM_CHANNELS 3
 static int channel;
+
+Mix_Music* music_loop;
+
+static void music_loop_callback(void) {
+	if (music_loop) {
+		Mix_PlayMusic(music_loop, -1);
+	}
+	Mix_HookMusicFinished(NULL);
+}
 
 void sound_init(void) {
     int flags = Mix_Init(MIX_INIT_OGG);
@@ -38,10 +48,18 @@ void sound_init(void) {
 		if (!sounds[i].sfx) {
 			fprintf(stderr, "Couldn't load %s: %s\n", sounds[i].name, Mix_GetError());
 		}
-		Mix_VolumeChunk(sounds[i].sfx, 64);
+		Mix_VolumeChunk(sounds[i].sfx, sounds[i].volume ? sounds[i].volume : 64);
 	}
 
 	Mix_AllocateChannels(NUM_CHANNELS);
+
+	Mix_Music* intro_music = Mix_LoadMUS("res/music/boneworld.ogg");
+	if (intro_music) {
+		Mix_PlayMusic(intro_music, 0);
+		Mix_HookMusicFinished(&music_loop_callback);
+	}
+
+	music_loop = Mix_LoadMUS("res/music/twentyone_loop.ogg");
 }
 
 void sound_play(const char* name, int loops) {

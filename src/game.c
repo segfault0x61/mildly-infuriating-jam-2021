@@ -162,8 +162,8 @@ void game_update(int delta) {
 		}
 	}
 
-	if (has_landed && !player.bat_timer && keys[SDL_SCANCODE_SPACE]) {
-		if (player.cooldown > 0) {
+	if (!player.bat_timer && keys[SDL_SCANCODE_SPACE]) {
+		if (!has_landed || player.cooldown > 0) {
 			sound_play("res/sfx/nope.ogg", 0);
 		} else {
 			sound_play("res/sfx/shapeshift.ogg", 0);
