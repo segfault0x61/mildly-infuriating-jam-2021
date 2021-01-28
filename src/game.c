@@ -166,6 +166,7 @@ void game_update(int delta) {
 		if (player.cooldown > 0) {
 			sound_play("res/sfx/nope.ogg", 0);
 		} else {
+			sound_play("res/sfx/shapeshift.ogg", 0);
 			sound_play("res/sfx/bat.ogg", 0);
 			sprite_set_tex(player_s, "res/sprites/bat.png", 0);
 			player.is_bat = true;
@@ -221,39 +222,6 @@ void game_update(int delta) {
 			SDL_Rect s_rect = sprite_get_hit_box(sprites + i);
 			SDL_Rect intersect;
 
-			if (SDL_IntersectRect(&x_rect, &s_rect, &intersect)) {
-				collision_x = true;
-
-				if (sprites[i].collision_response == RESP_KILL) {
-					should_kill = true;
-					break;
-				}
-
-				if (sprites[i].collision_response == RESP_POWERUP) {
-					puts("this is the part where you get a powerup");
-					
-					// TODO: Fix this
-					sprites[i].collision_type = COLLISION_NONE;
-					sprites[i].tex = 0;
-
-
-					if (player.is_bat) {
-						player.bat_timer = BAT_TIMER_MAX;
-					}
-				} else {
-					player_s->x += (player.x_velocity + player.x_remainder);
-					player.x_velocity = 0;
-					player.x_remainder = 0;
-					if (intersect.x <= x_rect.x) {
-						player_s->x += intersect.w;
-						x_rect.x += intersect.w;
-					} else {
-						player_s->x -= intersect.w;
-						x_rect.x -= intersect.w;
-					}
-				}
-			}
-
 			if (SDL_IntersectRect(&y_rect, &s_rect, &intersect)) {
 				collision_y = true;
 
@@ -288,6 +256,39 @@ void game_update(int delta) {
 						player_s->y -= intersect.h;
 						y_rect.y -= intersect.h;
 						x_rect.y -= intersect.h + 1;
+					}
+				}
+			}
+
+			if (SDL_IntersectRect(&x_rect, &s_rect, &intersect)) {
+				collision_x = true;
+
+				if (sprites[i].collision_response == RESP_KILL) {
+					should_kill = true;
+					break;
+				}
+
+				if (sprites[i].collision_response == RESP_POWERUP) {
+					puts("this is the part where you get a powerup");
+					
+					// TODO: Fix this
+					sprites[i].collision_type = COLLISION_NONE;
+					sprites[i].tex = 0;
+
+
+					if (player.is_bat) {
+						player.bat_timer = BAT_TIMER_MAX;
+					}
+				} else {
+					player_s->x += (player.x_velocity + player.x_remainder);
+					player.x_velocity = 0;
+					player.x_remainder = 0;
+					if (intersect.x <= x_rect.x) {
+						player_s->x += intersect.w;
+						x_rect.x += intersect.w;
+					} else {
+						player_s->x -= intersect.w;
+						x_rect.x -= intersect.w;
 					}
 				}
 			}
