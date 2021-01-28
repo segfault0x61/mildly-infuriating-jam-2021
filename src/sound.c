@@ -23,27 +23,25 @@ Sound sounds[] = {
 
 #define NUM_CHANNELS 3
 static int channel;
-
-Mix_Music* music_loop;
-
-static void music_loop_callback(void) {
-	if (music_loop) {
-		Mix_PlayMusic(music_loop, -1);
-	}
-	Mix_HookMusicFinished(NULL);
-}
+static Mix_Chunk* sfx_chans[128];
 
 void sound_init(void) {
+	SDL_Init(SDL_INIT_AUDIO);
+
     int flags = Mix_Init(MIX_INIT_OGG);
 	if (!(flags & MIX_INIT_OGG)) {
-		fprintf(stderr, "Couldn't load ogg vorbis codec\n");
+		fprintf(stderr, "Couldn't load ogg vorbis codec: %d\n", flags);
+		Mix_Init(0);
 	}
 
-	if (Mix_OpenAudio(44100, AUDIO_S16, 2, 1024) == -1) {
+    int const frequency = 48000;
+
+	if (Mix_OpenAudio(frequency, AUDIO_S16, 2, 4096) == -1) {
 		fprintf(stderr, "Couldn't open audio: %s\n", Mix_GetError());
+		return;
 	}
 
-	for (int i = 0; i < ARRAY_COUNT(sounds); ++i) {
+	for (int i = 0; i < array_count(sounds); ++i) {
 		sounds[i].sfx = Mix_LoadWAV(sounds[i].name);
 		if (!sounds[i].sfx) {
 			fprintf(stderr, "Couldn't load %s: %s\n", sounds[i].name, Mix_GetError());
@@ -51,21 +49,17 @@ void sound_init(void) {
 		Mix_VolumeChunk(sounds[i].sfx, sounds[i].volume ? sounds[i].volume : 64);
 	}
 
-	Mix_AllocateChannels(NUM_CHANNELS);
+	Mix_ReserveChannels(NUM_CHANNELS);
 
-	Mix_Music* intro_music = Mix_LoadMUS("res/music/boneworld.ogg");
-	if (intro_music) {
-		Mix_PlayMusic(intro_music, 0);
-		Mix_HookMusicFinished(&music_loop_callback);
-	}
-
-	music_loop = Mix_LoadMUS("res/music/twentyone_loop.ogg");
+	Mix_Music* main_music = Mix_LoadMUS("res/music/twentyone_loop.ogg");
+	Mix_PlayMusic(main_music, -1);
+	Mix_HookMusicFinished(NULL);
 }
 
 void sound_play(const char* name, int loops) {
 	Mix_Chunk* chunk = NULL;
 
-	for (int i = 0; i < ARRAY_COUNT(sounds); ++i) {
+	for (int i = 0; i < array_count(sounds); ++i) {
 		if (strcmp(name, sounds[i].name) == 0) {
 			chunk = sounds[i].sfx;
 			break;
@@ -76,13 +70,16 @@ void sound_play(const char* name, int loops) {
 
 	// Don't double up sound effects
 	for (int i = 0; i < NUM_CHANNELS; ++i) {
-		if (Mix_GetChunk(i) == chunk) {
+		if (sfx_chans[i] == chunk) {
 			Mix_HaltChannel(i);
 		}
 	}
 
-	if (Mix_PlayChannel(channel, chunk, loops) == -1) {
+	int i = Mix_PlayChannel(channel, chunk, loops);
+	if (i == -1) {
 		fprintf(stderr, "SFX error: %s\n", Mix_GetError());
+	} else {
+		sfx_chans[i] = chunk;
 	}
 
 	channel = (channel + 1) % NUM_CHANNELS;	

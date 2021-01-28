@@ -1,4 +1,5 @@
 #include "particles.h"
+
 #include "game.h"
 #include "sprite.h"
 
@@ -7,61 +8,61 @@
 
 typedef struct {
     Sprite sprite;
-    float x_velocity, x_position;
-    float y_velocity, y_position;
-    int timeToLive;
+    float x_pos, y_pos, x_vel, y_vel;
+    int ttl;
 } Particle;
 
-Particle particles[4096];
+Particle particles[512];
 int particle_cursor;
 
 void particles_spawn(SDL_Point pos, float xv, float yv, int amount) {
     for (int i = 0; i < amount; ++i) {
-        xv += ((rand() % 800) - 400) / 100.0f;
-        yv += ((rand() % 800) - 400) / 100.0f;
+        xv += ((rand() % 800) - 400) / 40.0f;
+        yv += ((rand() % 800) - 400) / 40.0f;
 
-        Particle p = {
-            .sprite = {
-                .x = pos.x,
-                .y = pos.y,
-                .w = PARTICLE_SIZE,
-                .h = PARTICLE_SIZE,
-            },
-            .x_position = pos.x,
-            .y_position = pos.y,
-            .x_velocity = xv,
-            .y_velocity = yv,
-            .timeToLive = PARTICLE_TTL_LIMIT + (rand() % 400)
-        };
+		Particle p = {
+			.sprite = {
+				.x = pos.x,
+				.y = pos.y,
+				.w = PARTICLE_SIZE,
+				.h = PARTICLE_SIZE,
+			},
+			.x_pos = pos.x,
+			.y_pos = pos.y,
+			.x_vel = xv,
+			.y_vel = yv,
+			.ttl = PARTICLE_TTL_LIMIT + (rand() % 400)
+		};
 
         particles[particle_cursor] = p;
-        particle_cursor = (particle_cursor + 1) % ARRAY_COUNT(particles);
+        particle_cursor = (particle_cursor + 1) % array_count(particles);
     }
 }
 
-void particles_update(int delta) {
-    for (int i = 0; i < ARRAY_COUNT(particles); ++i) {
+void particles_update(double delta) {
+    for (int i = 0; i < array_count(particles); ++i) {
         Particle* p = particles + i;
-        if (p->timeToLive <= 0) continue;
+        if (p->ttl <= 0) continue;
 
-        if (p->timeToLive < PARTICLE_TTL_LIMIT) {
-            p->y_velocity -= (delta / 8.0f);
-            p->x_position += (p->x_velocity / (float)delta);
-            p->y_position -= (p->y_velocity / (float)delta);
+        if (p->ttl < PARTICLE_TTL_LIMIT) {
+            p->y_vel -= (delta * 0.8);
 
-            p->sprite.x = p->x_position;
-            p->sprite.y = p->y_position;
+            p->x_pos += (p->x_vel / (float)delta);
+            p->y_pos -= (p->y_vel / (float)delta);
+
+            p->sprite.x = p->x_pos;
+            p->sprite.y = p->y_pos;
         }
-        p->timeToLive -= delta;
+        p->ttl -= delta;
     }
 }
 
 void particles_draw(void) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
-    for (int i = 0; i < ARRAY_COUNT(particles); ++i) {
+    for (int i = 0; i < array_count(particles); ++i) {
         Particle* p = particles + i;
-        if (p->timeToLive <= 0 || p->timeToLive >= PARTICLE_TTL_LIMIT) continue;
+        if (p->ttl <= 0 || p->ttl >= PARTICLE_TTL_LIMIT) continue;
 
         SDL_RenderFillRect(renderer, &p->sprite.rect);
     }

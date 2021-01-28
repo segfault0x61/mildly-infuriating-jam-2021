@@ -10,9 +10,9 @@ enum {
 };
 
 enum {
-	RESP_BLOCK,
-	RESP_KILL,
-	RESP_POWERUP,
+	CRESP_BLOCK,
+	CRESP_KILL,
+	CRESP_POWERUP,
 };
 
 typedef struct {
@@ -31,8 +31,8 @@ typedef struct {
 	int collision_type;
 	int collision_response;
 
-	float hitbox_scale_x;
-	float hitbox_scale_y;
+	float hit_box_scale_x;
+	float hit_box_scale_y;
 	float radius;
 
 	int flip_mode;
@@ -42,12 +42,12 @@ typedef struct {
 
 } Sprite;
 
-#define MAX_SPRITES 4096
+#define MAX_SPRITES 400
 
 extern Sprite sprites[MAX_SPRITES];
 extern int num_sprites;
 
-void sprite_set_color(Sprite* s, unsigned int color);
+void sprite_set_col(Sprite* s, unsigned int color);
 void sprite_set_tex(Sprite* s, const char* name, int frames);
 
 Sprite* sprite_push(int x, int y, int w, int h);
