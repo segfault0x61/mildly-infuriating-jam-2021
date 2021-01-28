@@ -84,14 +84,6 @@ void game_update(int delta) {
     const uint8_t *keys = SDL_GetKeyboardState(NULL);
     Sprite *player_s = player.sprite;
 
-	if (player.is_bat) {
-		player_s->hitbox_scale_x = 0.5f;
-		player_s->hitbox_scale_y = 0.5f;
-	} else {
-		player_s->hitbox_scale_x = 0.5f;
-		player_s->hitbox_scale_y = 1.0f;
-	}
-
 	const float accel   = (PLAYER_ACCEL * (delta / 16.0f));
 	const float max_imp = player.is_bat ? PLAYER_MAX_IMPULSE_BAT : PLAYER_MAX_IMPULSE;
 
@@ -181,6 +173,14 @@ void game_update(int delta) {
 			player.y_velocity = 0;
 			has_landed = false;
 		}
+	}
+
+	if (player.is_bat) {
+		player_s->hitbox_scale_x = 0.5f;
+		player_s->hitbox_scale_y = 0.5f;
+	} else {
+		player_s->hitbox_scale_x = 0.5f;
+		player_s->hitbox_scale_y = 1.0f;
 	}
 
 	float grav = player.is_bat ? ((float)delta / 18.0f) : ((float)delta / 16.0f);
