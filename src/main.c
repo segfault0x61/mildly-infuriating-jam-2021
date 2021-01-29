@@ -23,6 +23,13 @@ static void handle_event(SDL_Event* e) {
         case SDL_QUIT: {
             running = false;
         } break;
+        case SDL_KEYDOWN:
+            switch(e->key.keysym.sym) {
+                case SDLK_ESCAPE:
+                    exit(0);
+                    break;
+            }
+            break;
     }
 }
 
