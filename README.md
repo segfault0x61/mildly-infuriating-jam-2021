@@ -1,5 +1,5 @@
-# Mildly Infuriating Jam 2021
-A fun but frustrating platformer game made for the Mildly Infuriating Jam 2021. Where you play as a vampire who transforms into a bat to platform your way around frustrating obstables.
+# The Struggles of Alucard
+A fun but frustrating platformer game made for the Mildly Infuriating Jam 2021. Where you play as a vampire who transforms into a bat to platform your way around frustrating obstables. This game was submitted to two game jams, [Blackthornprod GAME JAM #3](https://itch.io/jam/blackthornprod-game-jam-3) and [Mildly Infuriating Jam](https://itch.io/jam/mildly-infuriating-jam).
 
 ## Setup
 ### Linux
