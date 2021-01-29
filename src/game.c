@@ -75,9 +75,9 @@ static void game_do_player_death(void) {
     particles_spawn(pos, 0.f, 100.0f, 100);
 
     if (player.is_bat) {
-        sound_play("res/sfx/bat.ogg", 0);
+        sound_play("res/sfx/bat.wav", 0);
     }
-    sound_play("res/sfx/die.ogg", 0);
+    sound_play("res/sfx/die.wav", 0);
 
     SDL_Point p = room_get_spawn();
     player.sprite->x = p.x;
@@ -144,17 +144,17 @@ void game_update(double delta) {
             player.bat_timer = 0;
             player.is_bat = false;
 
-            sound_play("res/sfx/unshapeshift.ogg", 0);
+            sound_play("res/sfx/unshapeshift.wav", 0);
             sprite_set_tex(player_s, "res/sprites/vamp.png", 0);
         }
     }
 
     if (!player.bat_timer && keys[SDL_SCANCODE_SPACE]) {
         if (!has_landed) {
-            sound_play("res/sfx/nope.ogg", 0);
+            sound_play("res/sfx/nope.wav", 0);
         } else {
-            sound_play("res/sfx/shapeshift.ogg", 0);
-            sound_play("res/sfx/bat.ogg", 0);
+            sound_play("res/sfx/shapeshift.wav", 0);
+            sound_play("res/sfx/bat.wav", 0);
             sprite_set_tex(player_s, "res/sprites/bat.png", 0);
             player.is_bat = true;
             player.bat_timer = BAT_TIMER_MAX;

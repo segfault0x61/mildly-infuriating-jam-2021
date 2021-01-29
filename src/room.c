@@ -263,7 +263,7 @@ void room_get_powerup(int index) {
     s->tex = 0;
     s->respawn_timer = 2000;
 
-    sound_play("res/sfx/powerup.ogg", 0);
+    sound_play("res/sfx/powerup.wav", 0);
 
     SDL_Point p = sprite_get_center(s);
 

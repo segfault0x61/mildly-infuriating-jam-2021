@@ -13,12 +13,12 @@ typedef struct {
 } Sound;
 
 Sound sounds[] = {
-	{ "res/sfx/bat.ogg", 80 },
-	{ "res/sfx/die.ogg", 64 },
-	{ "res/sfx/shapeshift.ogg", 40 },
-	{ "res/sfx/unshapeshift.ogg", 40 },
-	{ "res/sfx/nope.ogg", 20 },
-	{ "res/sfx/powerup.ogg", 64 },
+	{ "res/sfx/bat.wav", 80 },
+	{ "res/sfx/die.wav", 64 },
+	{ "res/sfx/shapeshift.wav", 40 },
+	{ "res/sfx/unshapeshift.wav", 40 },
+	{ "res/sfx/nope.wav", 20 },
+	{ "res/sfx/powerup.wav", 64 },
 };
 
 #define NUM_CHANNELS 3
@@ -28,18 +28,12 @@ static Mix_Chunk* sfx_chans[128];
 void sound_init(void) {
 	SDL_Init(SDL_INIT_AUDIO);
 
-    int flags = Mix_Init(MIX_INIT_OGG);
-	if (!(flags & MIX_INIT_OGG)) {
-		fprintf(stderr, "Couldn't load ogg vorbis codec: %d\n", flags);
+	if (Mix_Init(MIX_INIT_MOD | MIX_INIT_MP3) == 0) {
+		fprintf(stderr, "Failed to initialize Mixer %s: %d\n", Mix_GetError());
 		Mix_Init(0);
 	}
 
-    int const frequency = 48000;
-
-	if (Mix_OpenAudio(frequency, AUDIO_S16, 2, 4096) == -1) {
-		fprintf(stderr, "Couldn't open audio: %s\n", Mix_GetError());
-		return;
-	}
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
 	for (int i = 0; i < array_count(sounds); ++i) {
 		sounds[i].sfx = Mix_LoadWAV(sounds[i].name);
@@ -51,7 +45,7 @@ void sound_init(void) {
 
 	Mix_ReserveChannels(NUM_CHANNELS);
 
-	Mix_Music* main_music = Mix_LoadMUS("res/music/twentyone_loop.ogg");
+	Mix_Music* main_music = Mix_LoadMUS("res/music/twentyone_loop.mp3");
 	Mix_PlayMusic(main_music, -1);
 	Mix_HookMusicFinished(NULL);
 }
