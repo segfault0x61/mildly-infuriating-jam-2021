@@ -1,4 +1,6 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -65,14 +67,16 @@ int main(int argc, char** argv) {
 
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    if (SDL_CreateWindowAndRenderer(WIN_WIDTH, WIN_HEIGHT, 0, &win,
-                                    &renderer) == -1) {
-        fprintf(stderr, "SDL error creating window/renderer: %s\n",
-                SDL_GetError());
+    if (SDL_CreateWindowAndRenderer(WIN_WIDTH, WIN_HEIGHT, 0, &win, &renderer) == -1) {
+        fprintf(stderr, "SDL error creating window/renderer: %s\n", SDL_GetError());
         return 1;
     }
 
     SDL_SetWindowTitle(win, "The Struggles of Alucard");
+    
+    SDL_Surface *icon = IMG_Load("res/sprites/icon.png");
+    SDL_SetWindowIcon(win, icon);
+    SDL_FreeSurface(icon);
 
     SDL_RenderGetViewport(renderer, &viewport);
 
